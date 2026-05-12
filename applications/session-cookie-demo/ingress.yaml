@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: session-cookie-demo
+  namespace: applications
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: session-cookie-demo.192.168.50.10.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: session-cookie-demo
+                port:
+                  number: 80

@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spa-token-demo
+  namespace: applications
+  labels:
+    app.kubernetes.io/name: spa-token-demo
+    owner: platform-team
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: spa-token-demo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: spa-token-demo
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: spa-token-demo
+          image: ghcr.io/kse-bd8338bbe006/spa-token-demo:3e08cd9e8f88d40e9a29aeb7b689ac0a8ae9fa5c
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: DB_HOST
+              value: "192.168.50.10"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: spa_token_demo
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: spa-token-demo-db
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: spa-token-demo-db
+                  key: password
+            - name: KEYCLOAK_ISSUER_URI
+              value: http://keycloak.192.168.50.10.nip.io/realms/api-security
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 5
+      volumes:
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 64Mi

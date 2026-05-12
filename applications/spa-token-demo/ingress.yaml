@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: spa-token-demo
+  namespace: applications
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: spa-token-demo.192.168.50.10.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: spa-token-demo
+                port:
+                  number: 80

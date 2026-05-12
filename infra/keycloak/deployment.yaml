@@ -36,6 +36,7 @@ spec:
             - --hostname-strict=false
             - --proxy-headers=xforwarded
             - --http-enabled=true
+            - --health-enabled=true
           env:
             - name: DB_HOST
               value: "192.168.50.10"
@@ -81,13 +82,13 @@ spec:
           readinessProbe:
             httpGet:
               path: /health/ready
-              port: 9000
+              port: http
             initialDelaySeconds: 30
             periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /health/live
-              port: 9000
+              port: http
             initialDelaySeconds: 60
             periodSeconds: 15
       volumes:
